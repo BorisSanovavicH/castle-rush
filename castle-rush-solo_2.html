@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castle Rush — Solo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --stone:#15131A;
+    --panel:#221E2C;
+    --panel-line:#362F42;
+    --parchment:#EDE7DA;
+    --parchment-dim:#9C93A8;
+    --ember:#FF7A45;
+    --gold:#E3B341;
+    --royal:#8B7CF6;
+    --danger:#E85C5C;
+    --correct:#5FD08A;
+    --mono:'JetBrains Mono', monospace;
+    --display:'Space Grotesk', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--stone);color:var(--parchment);font-family:var(--display);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:60px 20px;
+  }
+  .brand{font-weight:700;font-size:18px;margin-bottom:6px;letter-spacing:-0.01em;}
+  .brand span{color:var(--ember);}
+  .sub{color:var(--parchment-dim);font-size:13px;margin-bottom:40px;font-family:var(--mono);}
+
+  .stats{display:flex;gap:32px;margin-bottom:24px;}
+  .stat{text-align:center;font-family:var(--mono);}
+  .stat .val{font-size:26px;font-weight:700;color:var(--gold);}
+  .stat .lbl{font-size:10.5px;color:var(--parchment-dim);letter-spacing:0.08em;text-transform:uppercase;}
+
+  .test-box{
+    background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;
+    padding:36px;max-width:720px;width:100%;position:relative;
+  }
+  .words-viewport{
+    height:126px; /* 3 lines at 42px line-height */
+    overflow:hidden;
+    position:relative;
+  }
+  .words{
+    font-family:var(--mono);font-size:22px;line-height:42px;
+    color:var(--panel-line);user-select:none;letter-spacing:0.3px;
+    filter:none;
+    transition:transform 0.25s ease;
+  }
+  .words.blurred{filter:blur(4px);opacity:0.5;}
+  .words span.letter{position:relative;}
+  .words span.correct{color:var(--parchment);}
+  .words span.incorrect{color:var(--danger);text-decoration:underline;text-decoration-color:var(--danger);}
+  .words span.current::before{
+    content:'';position:absolute;left:-1px;top:0;bottom:0;width:2px;
+    background:var(--ember);animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  .words span.word{margin-right:0.5em;display:inline-block;}
+
+  .overlay{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:14px;
+  }
+  .overlay p{color:var(--parchment-dim);font-family:var(--mono);font-size:13px;}
+  .hidden{display:none;}
+
+  #hiddenInput{
+    position:absolute;opacity:0;pointer-events:none;
+  }
+
+  .controls{display:flex;gap:10px;margin-top:22px;justify-content:center;flex-wrap:wrap;}
+  .btn{
+    font-family:var(--display);font-weight:600;font-size:13.5px;
+    background:var(--panel);border:1px solid var(--panel-line);color:var(--parchment);
+    padding:10px 18px;border-radius:8px;cursor:pointer;
+  }
+  .btn.active{border-color:var(--ember);color:var(--ember);}
+  .btn.primary{background:linear-gradient(180deg,#FF9463,var(--ember));color:#2A1206;border-color:transparent;}
+
+  .results{
+    background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;
+    padding:36px;max-width:720px;width:100%;text-align:center;
+  }
+  .results h2{font-size:26px;margin-bottom:24px;}
+  .results .row{display:flex;justify-content:center;gap:40px;margin-bottom:24px;}
+  .results .row .big{font-family:var(--mono);font-size:38px;font-weight:800;color:var(--gold);}
+  .results .row .lbl{font-family:var(--mono);font-size:11px;color:var(--parchment-dim);text-transform:uppercase;letter-spacing:0.08em;}
+  .best-note{font-family:var(--mono);font-size:12px;color:var(--correct);margin-bottom:20px;}
+</style>
+</head>
+<body>
+
+  <div class="brand">castle <span>rush</span></div>
+  <div class="sub">solo mode · practice run</div>
+
+  <div class="stats">
+    <div class="stat"><div class="val" id="liveWpm">0</div><div class="lbl">wpm</div></div>
+    <div class="stat"><div class="val" id="liveTime">30</div><div class="lbl">seconds</div></div>
+    <div class="stat"><div class="val" id="liveAcc">100</div><div class="lbl">accuracy</div></div>
+  </div>
+
+  <div class="test-box" id="testBox">
+    <div class="words-viewport">
+      <div class="words blurred" id="words"></div>
+    </div>
+    <div class="overlay" id="startOverlay">
+      <p>click here or start typing to begin</p>
+    </div>
+    <input id="hiddenInput" autocomplete="off" autocapitalize="off" spellcheck="false" />
+  </div>
+
+  <div class="controls" id="durationControls">
+    <button class="btn active" data-time="15">15s</button>
+    <button class="btn" data-time="30">30s</button>
+    <button class="btn" data-time="60">60s</button>
+    <button class="btn primary" id="restartBtn">restart</button>
+  </div>
+
+  <div class="results hidden" id="resultsBox">
+    <h2>run complete</h2>
+    <div class="row">
+      <div><div class="big" id="finalWpm">0</div><div class="lbl">wpm</div></div>
+      <div><div class="big" id="finalAcc">0</div><div class="lbl">accuracy</div></div>
+    </div>
+    <div class="best-note hidden" id="bestNote">new personal best!</div>
+    <button class="btn primary" id="tryAgainBtn">try again</button>
+  </div>
+
+<script>
+  // ---- word bank ----
+  const RAW_WORDS = ["a","i","am","an","as","at","be","by","do","go","he","if","in","is","it","me","my","no","of","oh","on","or","so","to","up","us","we","yes","you","all","and","any","are","but","can","did","for","get","had","has","her","him","his","how","its","let","may","one","our","out","put","say","she","the","too","two","was","way","who","why","will","with","yet","also","back","been","best","big","both","call","came","come","could","day","down","each","even","ever","every","feel","find","first","from","full","give","good","have","help","here","high","home","into","just","keep","kind","know","last","left","life","like","line","long","look","made","make","many","more","most","much","must","name","need","never","next","nice","night","only","open","over","part","people","place","play","point","right","room","same","seem","show","side","small","some","start","still","such","take","tell","than","that","their","them","then","there","these","they","thing","think","this","those","time","today","told","turn","under","until","very","want","water","well","went","were","what","when","where","which","while","work","world","would","year","your","about","above","after","again","among","around","asked","away","black","blood","board","break","bring","build","built","carry","cause","center","change","check","child","class","clear","close","color","common","could","cover","dance","early","earth","eight","enough","every","family","father","field","final","first","follow","force","found","front","game","given","great","green","group","happy","heard","heart","house","human","idea","image","important","inside","large","later","learn","leave","light","little","local","money","month","mother","music","never","number","office","often","order","paper","party","place","plant","power","press","price","quick","quite","ready","reason","really","record","river","round","school","second","serve","seven","short","simple","since","six","small","sound","south","space","speak","spent","stand","state","story","study","table","teach","thing","three","together","took","town","trade","train","true","under","voice","watch","water","white","whole","woman","write","wrong","young","answer","animal","appear","around","arrive","beauty","before","behind","better","broken","called","camera","captain","center","chance","choice","circle","coming","company","corner","country","course","create","danger","decide","doctor","during","effect","engine","evening","expect","famous","figure","friend","future","garden","golden","ground","happen","health","heavy","itself","jacket","kitchen","leader","letter","listen","market","matter","member","minute","moment","morning","moving","nation","nature","nearby","parent","people","period","person","picture","player","reason","result","school","search","season","simple","single","social","special","spring","street","strong","summer","system","toward","travel","useful","valley","window","winter","wonder","worker","writer","action","address","almost","always","amount","animal","anyone","become","before","believe","better","between","beyond","brother","change","choice","city","class","close","course","create","during","enough","example","family","father","friend","future","garden","getting","giving","going","happen","having","inside","instead","itself","making","meeting","morning","nothing","number","outside","picture","problem","program","receive","remember","running","someone","started","station","student","subject","support","teacher","though","through","together","tonight","toward","travel","trying","under","usually","welcome","without","working","yourself","because","another","between","country","different","example","favorite","history","however","interest","language","message","million","natural","office","perhaps","question","service","several","simple","special","station","thought","weather","whether","without","younger"];
+  const WORD_BANK = [...new Set(RAW_WORDS)];
+
+  function randomWords(count){
+    const out = [];
+    for(let i=0;i<count;i++){
+      out.push(WORD_BANK[Math.floor(Math.random()*WORD_BANK.length)]);
+    }
+    return out;
+  }
+
+  // ---- state ----
+  let duration = 15;
+  let timeLeft = duration;
+  let timerId = null;
+  let started = false;
+  let finished = false;
+  let currentWordIndex = 0;
+  let currentCharIndex = 0;
+  let correctChars = 0;
+  let incorrectChars = 0;
+  let words = [];
+
+  const wordsEl = document.getElementById('words');
+  const hiddenInput = document.getElementById('hiddenInput');
+  const startOverlay = document.getElementById('startOverlay');
+  const testBox = document.getElementById('testBox');
+  const liveWpm = document.getElementById('liveWpm');
+  const liveTime = document.getElementById('liveTime');
+  const liveAcc = document.getElementById('liveAcc');
+  const resultsBox = document.getElementById('resultsBox');
+  const finalWpm = document.getElementById('finalWpm');
+  const finalAcc = document.getElementById('finalAcc');
+  const bestNote = document.getElementById('bestNote');
+
+  function buildWords(){
+    words = randomWords(60);
+    wordsEl.innerHTML = words.map((w, wi) =>
+      `<span class="word" data-w="${wi}">` +
+      w.split('').map((c) => `<span class="letter">${c}</span>`).join('') +
+      `</span>`
+    ).join(' ');
+    markCurrent();
+  }
+
+  function markCurrent(){
+    document.querySelectorAll('.letter.current').forEach(el => el.classList.remove('current'));
+    const wordEl = wordsEl.querySelector(`.word[data-w="${currentWordIndex}"]`);
+    if(!wordEl) return;
+    const letterEl = wordEl.querySelectorAll('.letter')[currentCharIndex];
+    if(letterEl) letterEl.classList.add('current');
+
+    // keep the current line pinned to the top of the 3-line viewport
+    const lineTop = wordEl.offsetTop;
+    wordsEl.style.transform = `translateY(-${lineTop}px)`;
+  }
+
+  function resetState(){
+    clearInterval(timerId);
+    timeLeft = duration;
+    started = false;
+    finished = false;
+    currentWordIndex = 0;
+    currentCharIndex = 0;
+    correctChars = 0;
+    incorrectChars = 0;
+    liveTime.textContent = timeLeft;
+    liveWpm.textContent = '0';
+    liveAcc.textContent = '100';
+    hiddenInput.value = '';
+    wordsEl.classList.add('blurred');
+    startOverlay.classList.remove('hidden');
+    resultsBox.classList.add('hidden');
+    testBox.classList.remove('hidden');
+    document.getElementById('durationControls').classList.remove('hidden');
+    buildWords();
+  }
+
+  function reveal(){
+    if(finished) return;
+    wordsEl.classList.remove('blurred');
+    startOverlay.classList.add('hidden');
+  }
+
+  function startTest(){
+    if(started || finished) return;
+    started = true;
+    reveal();
+    timerId = setInterval(() => {
+      timeLeft--;
+      liveTime.textContent = timeLeft;
+      updateLiveWpm();
+      if(timeLeft <= 0) endTest();
+    }, 1000);
+  }
+
+  function updateLiveWpm(){
+    const elapsedMin = (duration - timeLeft) / 60;
+    if(elapsedMin <= 0) return;
+    const wpm = Math.round((correctChars / 5) / elapsedMin);
+    liveWpm.textContent = wpm;
+    const totalTyped = correctChars + incorrectChars;
+    const acc = totalTyped === 0 ? 100 : Math.round((correctChars / totalTyped) * 100);
+    liveAcc.textContent = acc;
+  }
+
+  function endTest(){
+    clearInterval(timerId);
+    finished = true;
+    testBox.classList.add('hidden');
+    document.getElementById('durationControls').classList.add('hidden');
+
+    const elapsedMin = duration / 60;
+    const wpm = Math.round((correctChars / 5) / elapsedMin);
+    const totalTyped = correctChars + incorrectChars;
+    const acc = totalTyped === 0 ? 100 : Math.round((correctChars / totalTyped) * 100);
+
+    finalWpm.textContent = wpm;
+    finalAcc.textContent = acc + '%';
+    resultsBox.classList.remove('hidden');
+
+    // personal best via localStorage
+    const key = 'castlerush_best_' + duration;
+    const prevBest = parseInt(localStorage.getItem(key) || '0', 10);
+    if(wpm > prevBest){
+      localStorage.setItem(key, wpm);
+      bestNote.classList.remove('hidden');
+    } else {
+      bestNote.classList.add('hidden');
+    }
+  }
+
+  hiddenInput.addEventListener('input', (e) => {
+    if(finished) return;
+    if(!started) startTest();
+
+    const typed = hiddenInput.value;
+    const wordEl = wordsEl.querySelector(`.word[data-w="${currentWordIndex}"]`);
+    if(!wordEl) return;
+    const letters = wordEl.querySelectorAll('.letter');
+    const targetWord = words[currentWordIndex];
+
+    // space = commit word
+    if(typed.endsWith(' ')){
+      // mark remaining letters in word as incorrect if not typed
+      for(let i = currentCharIndex; i < letters.length; i++){
+        letters[i].classList.remove('correct');
+        letters[i].classList.add('incorrect');
+        incorrectChars++;
+      }
+      currentWordIndex++;
+      currentCharIndex = 0;
+      hiddenInput.value = '';
+      if(currentWordIndex >= words.length){
+        words = words.concat(randomWords(30));
+        const extra = words.slice(-30).map((w, i) =>
+          `<span class="word" data-w="${words.length - 30 + i}">` +
+          w.split('').map(c => `<span class="letter">${c}</span>`).join('') +
+          `</span>`
+        ).join(' ');
+        wordsEl.innerHTML += ' ' + extra;
+      }
+      markCurrent();
+      return;
+    }
+
+    // typing within the word
+    currentCharIndex = typed.length;
+    letters.forEach((el, i) => {
+      el.classList.remove('correct', 'incorrect');
+      if(i < typed.length){
+        if(typed[i] === targetWord[i]){
+          el.classList.add('correct');
+        } else {
+          el.classList.add('incorrect');
+        }
+      }
+    });
+
+    // recompute correct/incorrect counts fresh each keystroke for accuracy
+    correctChars = 0;
+    incorrectChars = 0;
+    document.querySelectorAll('.letter.correct').forEach(() => correctChars++);
+    document.querySelectorAll('.letter.incorrect').forEach(() => incorrectChars++);
+
+    markCurrent();
+  });
+
+  testBox.addEventListener('click', () => {
+    hiddenInput.focus();
+    reveal();
+  });
+  hiddenInput.addEventListener('focus', () => reveal());
+  hiddenInput.focus();
+  reveal();
+
+  document.querySelectorAll('#durationControls .btn[data-time]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#durationControls .btn[data-time]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      duration = parseInt(btn.dataset.time, 10);
+      resetState();
+      hiddenInput.focus();
+    });
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    resetState();
+    hiddenInput.focus();
+  });
+  document.getElementById('tryAgainBtn').addEventListener('click', () => {
+    resetState();
+    hiddenInput.focus();
+  });
+
+  resetState();
+</script>
+</body>
+</html>
