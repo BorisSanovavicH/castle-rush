@@ -43,8 +43,15 @@
     padding:36px 20px 60px;
   }
   /* ---- user chip (top-right) ---- */
+  .top-right{position:absolute;top:16px;right:20px;display:flex;align-items:center;gap:12px;}
+  .nav-link{
+    font-family:var(--mono);font-size:12px;font-weight:600;color:var(--parchment-dim);
+    border:1px solid var(--panel-line);background:var(--panel);border-radius:999px;padding:9px 14px;
+    transition:color .15s,border-color .15s;text-decoration:none;
+  }
+  .nav-link:hover{color:var(--gold);border-color:rgba(227,179,65,0.5);}
   .user-chip{
-    position:absolute;top:16px;right:20px;display:flex;align-items:center;gap:10px;
+    display:flex;align-items:center;gap:10px;
     font-family:var(--mono);font-size:12px;color:var(--parchment-dim);
     background:var(--panel);border:1px solid var(--panel-line);border-radius:999px;padding:5px 6px 5px 6px;
   }
@@ -54,7 +61,7 @@
   }
   .user-chip .uname{color:var(--parchment);font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .user-chip .linkbtn{padding:4px 10px 4px 2px;}
-  @media(max-width:900px){.user-chip{position:static;margin-bottom:12px;}}
+  @media(max-width:900px){.top-right{position:static;margin-bottom:12px;}}
 
   /* ---- brand lockup: logo + game mode, grouped ---- */
   .brand-lockup{display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:18px;}
@@ -173,6 +180,10 @@
   .results.record .res-wpm{color:var(--gold);text-shadow:0 0 40px rgba(227,179,65,0.35);}
   .res-msg{font-size:15px;color:var(--parchment-dim);margin:18px 0 20px;min-height:22px;}
   .results.record .res-msg{color:var(--gold);font-weight:600;}
+  .rank-note{font-family:var(--mono);font-size:12.5px;color:var(--gold);margin:-8px 0 18px;min-height:0;}
+  .rank-note:empty{display:none;}
+  .save-note{font-family:var(--mono);font-size:11.5px;color:var(--parchment-dim);margin:-8px 0 20px;min-height:16px;}
+  .save-note a{color:var(--ember);text-decoration:underline;text-underline-offset:3px;}
   .pb-progress{margin:0 auto 28px;max-width:520px;}
   .pb-track{position:relative;height:8px;border-radius:6px;background:var(--stone);}
   .pb-fill{height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--ember),#FF9463);transition:width .7s cubic-bezier(.2,.8,.2,1);}
@@ -203,10 +214,13 @@
 </head>
 <body>
 
-  <div class="user-chip" id="userChip">
-    <span class="avatar" id="userAvatar">G</span>
-    <span class="uname" id="userName">Guest</span>
-    <button class="linkbtn" id="userAction" type="button">sign in</button>
+  <div class="top-right">
+    <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+    <div class="user-chip" id="userChip">
+      <span class="avatar" id="userAvatar">G</span>
+      <span class="uname" id="userName">Guest</span>
+      <button class="linkbtn" id="userAction" type="button">sign in</button>
+    </div>
   </div>
 
   <div class="brand-lockup">
@@ -254,6 +268,7 @@
     <div class="res-wpm" id="finalWpm">0</div>
     <div class="res-wpm-lbl">words per minute</div>
     <div class="res-msg" id="pbMsg"></div>
+    <div class="rank-note" id="rankNote"></div>
 
     <div class="pb-progress hidden" id="pbProgress">
       <div class="pb-track">
@@ -269,6 +284,8 @@
       <div><div class="sv" id="finalMistakes">0</div><div class="lbl">mistakes</div></div>
     </div>
 
+    <div class="save-note" id="saveNote"></div>
+
     <div class="res-actions">
       <button class="btn primary big" id="tryAgainBtn">play again <kbd>&crarr;</kbd></button>
       <div class="res-more">
@@ -279,6 +296,7 @@
           <button class="btn" data-time="60">60s</button>
         </div>
         <button class="linkbtn" id="detailsBtn">view detailed stats</button>
+        <a class="linkbtn" href="leaderboard.html">leaderboard</a>
       </div>
     </div>
 
@@ -525,6 +543,8 @@
   const pbBadge = document.getElementById('pbBadge');
   const resKicker = document.getElementById('resKicker');
   const pbMsg = document.getElementById('pbMsg');
+  const rankNote = document.getElementById('rankNote');
+  const saveNote = document.getElementById('saveNote');
   const pbProgress = document.getElementById('pbProgress');
   const pbFill = document.getElementById('pbFill');
   const pbMarker = document.getElementById('pbMarker');
@@ -723,6 +743,80 @@
     }
   }
 
+  function showComparison(prevBest, wpm, localKey){
+    let record = false;
+    let badge = '';
+    let msg = '';
+    pbProgress.classList.add('hidden');
+    pbFill.style.width = '0%';
+    pbFill.classList.remove('record');
+
+    if(prevBest === null){
+      if(wpm > 0){
+        record = true;
+        badge = '\u2605 FIRST RECORD';
+        msg = 'First record set \u2014 this is the score to beat.';
+      } else {
+        msg = 'Type a few words to set your first record.';
+      }
+    } else {
+      const diff = wpm - prevBest;
+      const scale = Math.max(wpm, prevBest, 1);
+      pbProgress.classList.remove('hidden');
+      pbMarker.style.left = (prevBest / scale * 100) + '%';
+      pbLeft.textContent = 'this run \u00b7 ' + wpm + ' wpm';
+      pbRight.textContent = 'previous best \u00b7 ' + prevBest + ' wpm';
+      if(diff > 0){
+        record = true;
+        badge = '\u2605 NEW RECORD';
+        msg = 'New personal best! +' + diff + ' wpm over your previous ' + prevBest + '.';
+        pbFill.classList.add('record');
+      } else if(diff === 0){
+        msg = 'You matched your best of ' + prevBest + ' wpm.';
+      } else {
+        const gap = prevBest - wpm;
+        msg = gap + ' wpm short of your best' + (gap <= Math.max(3, prevBest * 0.1) ? ' \u2014 so close.' : '.');
+      }
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        pbFill.style.width = (wpm / scale * 100) + '%';
+      }));
+    }
+
+    // keep this device's copy of the best up to date too (used as an offline fallback)
+    const cur = parseInt(localStorage.getItem(localKey), 10);
+    if(wpm > 0 && (isNaN(cur) || wpm > cur)) localStorage.setItem(localKey, wpm);
+
+    resultsBox.classList.toggle('record', record);
+    pbBadge.textContent = badge;
+    pbMsg.textContent = msg;
+  }
+
+  function saveRun(state, uid, A){
+    if(state.wpm < 1){ saveNote.textContent = ''; return Promise.resolve(); }
+    const row = {
+      user_id: uid,
+      duration: state.durationSeconds,
+      wpm: state.wpm,
+      accuracy: state.accuracy,
+      correct_words: state.correctWords,
+      mistakes: state.mistakes,
+    };
+    return A.saveScore(row).then(() => {
+      saveNote.textContent = '\u2713 Saved to your account';
+      return Promise.all([A.myRank(state.durationSeconds, A.weekStart()), A.myRank(state.durationSeconds, null)])
+        .then(([week, all]) => {
+          const parts = [];
+          if(week) parts.push('This week #' + week.rank);
+          if(all) parts.push('All-time #' + all.rank);
+          rankNote.textContent = parts.join('  \u00b7  ');
+        })
+        .catch(() => {});
+    }, () => {
+      A.queueScore(row);
+      saveNote.textContent = "Couldn't save this run right now \u2014 we'll try again next time you play.";
+    });
+  }
+
   function onFinish(){
     const state = TypingEngine.getState();
     finishedAt = performance.now();
@@ -748,54 +842,35 @@
     document.getElementById('dWords').textContent = state.wordsCompleted;
     document.getElementById('dTime').textContent = state.durationSeconds + 's';
 
-    // personal best (stored per duration) + comparison with the previous best
-    const key = 'castlerush_best_' + (window.CR_BEST_PREFIX || '') + state.durationSeconds;
-    const stored = parseInt(localStorage.getItem(key), 10);
-    const prevBest = isNaN(stored) ? null : stored;
+    // personal best + saving: accounts use the cloud, guests use this device
+    const dur = state.durationSeconds;
+    const A = window.CR_AUTH;
+    const uid = window.CR_USER_ID || null;
+    const localKey = 'castlerush_best_' + (window.CR_BEST_PREFIX || '') + dur;
+    const localStored = parseInt(localStorage.getItem(localKey), 10);
+    const localPrev = isNaN(localStored) ? null : localStored;
 
-    let record = false;
-    let badge = '';
-    let msg = '';
+    rankNote.textContent = '';
+    saveNote.textContent = '';
+    resultsBox.classList.remove('record');
+    pbBadge.textContent = '';
     pbProgress.classList.add('hidden');
     pbFill.style.width = '0%';
     pbFill.classList.remove('record');
 
-    if(prevBest === null){
-      if(wpm > 0){
-        record = true;
-        badge = '\u2605 FIRST RECORD';
-        msg = 'First record set \u2014 this is the score to beat.';
-        localStorage.setItem(key, wpm);
-      } else {
-        msg = 'Type a few words to set your first record.';
-      }
+    if(uid && A && A.configured){
+      pbMsg.textContent = 'Checking your best\u2026';
+      saveNote.textContent = 'Saving your run\u2026';
+      A.cloudBest(uid, dur)
+        .catch(() => localPrev)            // cloud unavailable: fall back to this device's best
+        .then(prev => {
+          showComparison(prev, wpm, localKey);
+          return saveRun(state, uid, A);
+        });
     } else {
-      const diff = wpm - prevBest;
-      const scale = Math.max(wpm, prevBest, 1);
-      pbProgress.classList.remove('hidden');
-      pbMarker.style.left = (prevBest / scale * 100) + '%';
-      pbLeft.textContent = 'this run \u00b7 ' + wpm + ' wpm';
-      pbRight.textContent = 'previous best \u00b7 ' + prevBest + ' wpm';
-      if(diff > 0){
-        record = true;
-        badge = '\u2605 NEW RECORD';
-        msg = 'New personal best! +' + diff + ' wpm over your previous ' + prevBest + '.';
-        pbFill.classList.add('record');
-        localStorage.setItem(key, wpm);
-      } else if(diff === 0){
-        msg = 'You matched your best of ' + prevBest + ' wpm.';
-      } else {
-        const gap = prevBest - wpm;
-        msg = gap + ' wpm short of your best' + (gap <= Math.max(3, prevBest * 0.1) ? ' \u2014 so close.' : '.');
-      }
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        pbFill.style.width = (wpm / scale * 100) + '%';
-      }));
+      showComparison(localPrev, wpm, localKey);
+      saveNote.innerHTML = 'Guest run \u2014 <a href="index.html">sign up</a> to save runs and join the leaderboard.';
     }
-
-    resultsBox.classList.toggle('record', record);
-    pbBadge.textContent = badge;
-    pbMsg.textContent = msg;
 
     // Full internal stats — available for future modes/debugging.
     window.lastTypingTestStats = {
@@ -981,6 +1056,8 @@
       if(session){
         A.clearGuest();
         window.CR_BEST_PREFIX = 'u_' + session.user.id + '_';
+        window.CR_USER_ID = session.user.id;
+        A.flushPending(session.user.id);
         setChip(A.displayName(session.user), 'log out', function(){
           A.signOut().then(function(){ location.replace('index.html'); });
         });

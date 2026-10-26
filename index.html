@@ -241,6 +241,7 @@
     // ---- friendly error messages ----
     function friendly(err) {
       var m = ((err && err.message) || '').toLowerCase();
+      if (m.indexOf('username_taken') !== -1) return 'That username is already taken. Try another one.';
       if (m.indexOf('invalid login') !== -1) return 'That email and password do not match.';
       if (m.indexOf('already registered') !== -1 || m.indexOf('already been registered') !== -1) return 'An account with that email already exists. Try logging in instead.';
       if (m.indexOf('not confirmed') !== -1) return 'Please confirm your email first. Check your inbox for the link.';
@@ -293,7 +294,13 @@
 
       var btn = $('signupSubmit');
       setBusy(btn, true, 'Create account', 'Creating account…');
-      A.client.auth.signUp({ email: email, password: password, options: { data: { username: username } } })
+      A.usernameAvailable(username)
+        .then(function (free) {
+          if (free === false) { throw new Error('USERNAME_TAKEN'); }
+        }, function () { /* the lookup is unavailable: do not block sign-up */ })
+        .then(function () {
+          return A.client.auth.signUp({ email: email, password: password, options: { data: { username: username } } });
+        })
         .then(function (res) {
           if (res.error) throw res.error;
           var user = res.data && res.data.user;
@@ -313,6 +320,7 @@
           setBusy(btn, false, 'Create account', 'Creating account…');
         })
         .catch(function (err) {
+          if (err && err.message === 'USERNAME_TAKEN') { $('signupUsername').classList.add('invalid'); $('signupUsername').focus(); }
           showNotice('error', friendly(err));
           setBusy(btn, false, 'Create account', 'Creating account…');
         });
