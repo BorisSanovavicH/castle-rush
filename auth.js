@@ -9,8 +9,8 @@
    Never paste the "service_role" key here.
    ============================================================================ */
 (function () {
-  var SUPABASE_URL = '';        // e.g. 'https://abcdxyz.supabase.co'
-  var SUPABASE_ANON_KEY = '';   // e.g. 'eyJhbGciOi...'
+  var SUPABASE_URL = 'https://pseqjkghosqncbxwjpnm.supabase.co';        // e.g. 'https://abcdxyz.supabase.co'
+  var SUPABASE_ANON_KEY = 'sb_publishable_ef6wIq9X_xKDYh8Mviw4tA_jv3apKdX';   // e.g. 'eyJhbGciOi...'
 
   var GUEST_KEY = 'castlerush_guest';
 
