@@ -59,7 +59,8 @@
   .row:last-child{border-bottom:none;}
   .row.head{background:var(--stone-raised);color:var(--parchment-dim);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;padding-top:11px;padding-bottom:11px;}
   .row .rk{color:var(--parchment-dim);}
-  .row .nm{font-family:var(--display);font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .row .nm{font-family:var(--display);font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;min-width:0;}
+  .row .nm .nm-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;}
   .row .acc{text-align:right;color:var(--parchment-dim);}
   .row .wp{text-align:right;font-weight:800;font-size:16px;color:var(--gold);}
   .row.r1{background:linear-gradient(90deg,var(--gold),var(--ember));color:#fff;}
@@ -69,7 +70,7 @@
   .row.r1 .rk,.row.r2 .rk,.row.r3 .rk{font-weight:800;}
   .row.me{box-shadow:inset 3px 0 0 var(--gold);}
   .row:not(.head):not(.r1):not(.r2):not(.r3).me{background:rgba(227,179,65,0.08);}
-  .you-tag{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--gold);border:1px solid rgba(227,179,65,0.5);border-radius:10px;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  .you-tag{flex:none;font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;color:var(--gold);border:1px solid rgba(227,179,65,0.5);border-radius:10px;padding:3px 7px;}
   .row.r1 .you-tag,.row.r2 .you-tag,.row.r3 .you-tag{color:#fff;border-color:rgba(255,255,255,0.7);}
 
   .state{padding:44px 20px;text-align:center;color:var(--parchment-dim);font-size:14px;line-height:1.6;}
@@ -158,7 +159,8 @@
           if (isMe) inList = true;
           var row = el('div', 'row' + (r.rank <= 3 ? ' r' + r.rank : '') + (isMe ? ' me' : ''));
           row.appendChild(el('span', 'rk', String(r.rank)));
-          var nm = el('span', 'nm', r.username);
+          var nm = el('span', 'nm');
+          nm.appendChild(el('span', 'nm-text', r.username));
           if (isMe) nm.appendChild(el('span', 'you-tag', 'YOU'));
           row.appendChild(nm);
           row.appendChild(el('span', 'acc', r.accuracy + '%'));
