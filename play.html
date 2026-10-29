@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Solo Practice · TypeBound</title>
+<title>Solo Rank · TypeBound</title>
 <meta name="description" content="TypeBound — Your Skill. Your Climb. Competitive typing tests with 15, 30 and 60 second runs and live leaderboards.">
 <meta name="theme-color" content="#0B0D17">
 <meta property="og:title" content="TypeBound — Your Skill. Your Climb.">
@@ -91,7 +91,7 @@
   .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
   .overlay p { color: var(--text); font-family: var(--font-mono); font-size: 13.5px; text-shadow: 0 0 14px var(--card), 0 0 4px var(--card); }
   #hiddenInput { position: absolute; opacity: 0; pointer-events: none; }
-  .touch-hint { display: none; margin-top: 12px; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); text-align: center; }
+  .touch-hint { display: none; margin-top: 12px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-2); text-align: center; }
   @media (pointer: coarse) { .touch-hint { display: block; } }
 
   @media (max-width: 640px) {
@@ -157,12 +157,13 @@
 <body>
 
   <header class="app-header">
-    <a class="brand" href="play.html" aria-label="TypeBound home">
+    <a class="brand" href="home.html" aria-label="TypeBound home">
       <img class="brand-mark" src="typebound-mark.png" alt="" width="48" height="44">
       <img class="brand-word" src="typebound-wordmark.png" alt="TypeBound" width="147" height="20">
     </a>
-    <span class="mode-pill">Solo Practice</span>
+    <span class="mode-pill">Solo Rank</span>
     <div class="header-actions">
+      <a class="nav-link" href="home.html">Home</a>
       <a class="nav-link" href="leaderboard.html">Leaderboard</a>
       <div class="user-chip" id="userChip">
         <span class="avatar" id="userAvatar">G</span>

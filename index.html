@@ -49,8 +49,8 @@
 
   .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 16px; color: var(--muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
   .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .guest-note { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; line-height: 1.5; }
-  .foot { margin-top: 22px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; }
+  .guest-note { font-family: var(--font-mono); font-size: 11px; color: var(--text-2); text-align: center; margin-top: 10px; line-height: 1.5; }
+  .foot { margin-top: 22px; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); text-align: center; }
   @media (max-width: 480px) { .auth-card { padding: 22px 18px 20px; } }
 </style>
 </head>
@@ -139,7 +139,7 @@
     // ---- already logged in? go straight to the game ----
     if (A && A.configured) {
       A.getSession().then(function (session) {
-        if (session) location.replace('play.html');
+        if (session) location.replace('home.html');
       });
     }
 
@@ -221,7 +221,7 @@
         .then(function (res) {
           if (res.error) throw res.error;
           A.clearGuest();
-          location.replace('play.html');
+          location.replace('home.html');
         })
         .catch(function (err) {
           showNotice('error', friendly(err));
@@ -261,7 +261,7 @@
           }
           if (res.data && res.data.session) {          // email confirmation is off: logged in immediately
             A.clearGuest();
-            location.replace('play.html');
+            location.replace('home.html');
             return;
           }
           // email confirmation is on: ask the player to confirm, then log in
@@ -280,7 +280,7 @@
     // ---- guest ----
     $('guestBtn').addEventListener('click', function () {
       if (A) A.enterGuest();
-      location.href = 'play.html';
+      location.href = 'home.html';
     });
   })();
 </script>

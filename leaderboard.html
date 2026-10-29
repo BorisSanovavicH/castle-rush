@@ -66,7 +66,7 @@
   .you-card, .cta { margin-top: 16px; padding: 14px 18px; border-radius: var(--radius); font-size: 14px; text-align: center; background: var(--card); border: 1px solid var(--border); color: var(--text-2); }
   .you-card b { color: var(--blue); font-family: var(--font-mono); }
   .cta a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
-  .note { margin-top: 18px; text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .note { margin-top: 18px; text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); }
 
   @media (max-width: 560px) {
     .row { grid-template-columns: 44px 1fr 70px; padding: 12px 14px; }
@@ -79,12 +79,13 @@
 <body>
 
   <header class="app-header">
-    <a class="brand" href="play.html" aria-label="TypeBound home">
+    <a class="brand" href="home.html" aria-label="TypeBound home">
       <img class="brand-mark" src="typebound-mark.png" alt="" width="48" height="44">
       <img class="brand-word" src="typebound-wordmark.png" alt="TypeBound" width="147" height="20">
     </a>
     <span class="mode-pill">Leaderboard</span>
     <div class="header-actions">
+      <a class="nav-link" href="home.html">Home</a>
       <a class="btn primary sm" href="play.html">Play</a>
     </div>
   </header>

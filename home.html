@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home · TypeBound</title>
+<meta name="description" content="TypeBound — Your Skill. Your Climb. Competitive typing tests with 15, 30 and 60 second runs and live leaderboards.">
+<meta name="theme-color" content="#0B0D17">
+<meta property="og:title" content="TypeBound — Your Skill. Your Climb.">
+<meta property="og:description" content="Competitive typing tests with live leaderboards.">
+<meta property="og:type" content="website">
+<script>
+  // Players must be logged in or playing as a guest. Runs before the page paints.
+  (function(){
+    try {
+      var hasSession = Object.keys(localStorage).some(function(k){ return /^sb-.+-auth-token$/.test(k); });
+      if(!hasSession && localStorage.getItem('castlerush_guest') !== '1'){ location.replace('index.html'); }
+    } catch(e) {}
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="data.js"></script>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dash">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <button class="icon-btn" id="menuBtn" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <a class="brand" href="home.html" aria-label="TypeBound home">
+      <img class="brand-mark" src="typebound-mark.png" alt="" width="51" height="46">
+      <img class="brand-word" src="typebound-wordmark.png" alt="TypeBound" width="162" height="22">
+    </a>
+    <span class="tagline">Your Skill. Your Climb.</span>
+    <div class="topbar-actions">
+      <a class="nav-link with-icon" href="leaderboard.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4"/><path d="M12 13v4M9 21h6M10 17h4"/></svg><span class="t">Leaderboard</span></a>
+      <div class="account" id="account">
+        <button class="account-btn" id="accountBtn" type="button" aria-expanded="false" aria-controls="accountMenu" aria-label="Account menu">
+          <span class="avatar" id="accAvatar">&middot;</span><span class="acc-name" id="accName">&hellip;</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="account-menu hidden" id="accountMenu"></div>
+      </div>
+    </div>
+  </header>
+  <div class="scrim hidden" id="scrim"></div>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="nav-item" href="home.html" aria-current="page"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>Home</span></a>
+      <a class="nav-item" href="profile.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></a>
+      <a class="nav-item" href="leaderboard.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4"/><path d="M12 13v4M9 21h6M10 17h4"/></svg><span>Leaderboard</span></a>
+      <div class="sidebar-foot"><img src="typebound-mark.png" alt="" width="42" height="38"><span>Better than<br>yesterday.</span></div>
+    </nav>
+    <main class="content" id="main">
+
+      <div class="page-grid">
+        <div class="col">
+          <section class="welcome" aria-label="Welcome">
+            <div>
+              <div class="kicker">Welcome back,</div>
+              <h1 id="welcomeName">&hellip;</h1>
+              <p>Sharpen your skills. Beat your best. Climb the leaderboard.</p>
+            </div>
+            <img src="typebound-logo.png" alt="" width="210" height="110">
+          </section>
+
+          <section aria-labelledby="modesTitle">
+            <h2 class="section-title" id="modesTitle">Game Modes</h2>
+            <p class="section-sub">Choose your challenge and put your typing skills to the test.</p>
+            <div class="modes">
+              <a class="mode-card active" href="play.html" id="soloCard">
+                <span class="badge live">Play now</span>
+                <div class="mode-icon"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg></div>
+                <h3>Solo Rank</h3>
+                <p>Practice your typing, improve your personal records, and track your performance.</p>
+                <div class="mode-cta"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span>Start Typing</span></div>
+              </a>
+              <div class="mode-card disabled" id="pvpCard" aria-disabled="true" role="group" aria-label="PvP, coming soon">
+                <span class="badge soon">Coming soon</span>
+                <div class="mode-icon"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M3 8l5-5M20 4l-9 9M21 8l-5-5M9 15l-4 4M15 15l4 4"/></svg></div>
+                <h3>PvP</h3>
+                <p>Challenge other players in competitive real-time typing duels.</p>
+                <div class="mode-cta"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Not available yet</span></div>
+              </div>
+              <div class="mode-card disabled" id="royaleCard" aria-disabled="true" role="group" aria-label="Type Royale, coming soon">
+                <span class="badge soon">Coming soon</span>
+                <div class="mode-icon"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"/></svg></div>
+                <h3>Type Royale</h3>
+                <p>Compete against multiple players and fight to become the last typist standing.</p>
+                <div class="mode-cta"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Not available yet</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="progress-strip" aria-label="Track your progress">
+            <div class="ps-icon"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4"/><path d="M12 13v4M9 21h6M10 17h4"/></svg></div>
+            <div>
+              <h3 id="psTitle">Track Your Progress</h3>
+              <p id="psText">See your personal bests, accuracy and recent runs on your Profile, and check how you compare on the leaderboard.</p>
+            </div>
+            <a class="btn primary" id="psBtn" href="profile.html"><span>View Profile</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </section>
+        </div>
+
+        <div class="col side-stack">
+          <section class="card" aria-label="Your account">
+            <div class="identity">
+              <span class="avatar" id="idAvatar">&middot;</span>
+              <div><div class="name" id="idName">&hellip;</div><div class="meta" id="idMeta">&nbsp;</div></div>
+            </div>
+          </section>
+
+          <section class="card hidden" id="guestCard" aria-label="Sign up to save your progress">
+            <div class="empty"><b>You're playing as a guest</b>Create a free account to save your runs, track your stats and appear on the leaderboard.
+              <a class="btn primary" href="index.html">Sign up or log in</a></div>
+          </section>
+
+          <section class="card" id="statsCard" aria-labelledby="qsTitle">
+            <div class="card-head"><h2 id="qsTitle">Quick Stats</h2></div>
+            <div id="statsBody" class="stat-grid">
+              <div class="stat-tile"><div class="lbl"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>Best WPM</div>
+        <div class="val" id="qsBest"><span class="skel" style="width:56px;height:26px"></span></div>
+        <div class="cap" id="qsBestCap">&nbsp;</div></div>
+              <div class="stat-tile"><div class="lbl"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>Avg. Accuracy</div>
+        <div class="val" id="qsAcc"><span class="skel" style="width:56px;height:26px"></span></div>
+        <div class="cap" id="qsAccCap">&nbsp;</div></div>
+              <div class="stat-tile"><div class="lbl"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Total Runs</div>
+        <div class="val" id="qsRuns"><span class="skel" style="width:56px;height:26px"></span></div>
+        <div class="cap" id="qsRunsCap">&nbsp;</div></div>
+              <div class="stat-tile"><div class="lbl"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Typing Time</div>
+        <div class="val" id="qsTime"><span class="skel" style="width:56px;height:26px"></span></div>
+        <div class="cap" id="qsTimeCap">&nbsp;</div></div>
+            </div>
+            <div id="statsError" class="errorbox hidden" role="alert"></div>
+          </section>
+
+          <section class="card" id="recentCard" aria-labelledby="raTitle">
+            <div class="card-head"><h2 id="raTitle">Recent Activity</h2></div>
+            <ul class="activity" id="recentList"><li><span class="skel" style="width:100%;height:38px"></span></li><li><span class="skel" style="width:100%;height:38px"></span></li></ul>
+            <div id="recentEmpty" class="empty hidden"><b>No runs yet</b>Your latest completed runs will show up here.<br><a class="btn primary sm" href="play.html">Start typing</a></div>
+            <div id="recentError" class="errorbox hidden" role="alert"></div>
+          </section>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<script src="shell.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var F = window.TB_FORMAT, D = window.TB_DATA;
+  var BOLT = '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>';
+  var current = null;
+
+  function initials(n) { return ((n || '?').replace(/[^A-Za-z0-9]/g, '').slice(0, 2) || '?').toUpperCase(); }
+  function show(id, on) { $(id).classList.toggle('hidden', !on); }
+  function tile(id, value, cap) { $(id).textContent = value; $(id + 'Cap').textContent = cap; }
+
+  function errorBox(id, retry) {
+    var box = $(id);
+    box.textContent = '';
+    var b = document.createElement('b'); b.textContent = "Couldn't load this right now";
+    box.appendChild(b);
+    box.appendChild(document.createTextNode('Check your connection and try again.'));
+    box.appendChild(document.createElement('br'));
+    var btn = document.createElement('button');
+    btn.className = 'btn sm'; btn.type = 'button'; btn.textContent = 'Try again';
+    btn.addEventListener('click', retry);
+    box.appendChild(btn);
+    box.classList.remove('hidden');
+  }
+
+  function renderRecent(runs) {
+    var ul = $('recentList');
+    ul.textContent = '';
+    if (!runs.length) { show('recentEmpty', true); return; }
+    runs.forEach(function (r) {
+      var li = document.createElement('li');
+      li.innerHTML = '<span class="act-icon">' + BOLT + '</span><div class="act-main"><div class="act-title"></div><div class="act-sub"></div></div><span class="act-time"></span>';
+      li.querySelector('.act-title').textContent = 'Solo Rank \u2022 ' + r.duration + 's';
+      li.querySelector('.act-sub').textContent = r.wpm + ' WPM \u2022 ' + r.accuracy + '%';
+      var t = li.querySelector('.act-time'); t.textContent = F.ago(r.created_at); t.title = new Date(r.created_at).toLocaleString();
+      ul.appendChild(li);
+    });
+  }
+
+  function renderStats(sum) {
+    if (!sum.runs) {
+      tile('qsBest', '\u2014', 'Complete a run'); tile('qsAcc', '\u2014', 'Complete a run');
+      tile('qsRuns', '0', 'No runs yet');          tile('qsTime', '\u2014', 'No runs yet');
+      return;
+    }
+    tile('qsBest', String(sum.bestWpm), 'Solo Rank \u2022 ' + sum.bestDuration + 's');
+    tile('qsAcc', F.percent(sum.avgAccuracy), 'all ' + sum.runs + (sum.runs === 1 ? ' run' : ' runs'));
+    tile('qsRuns', String(sum.runs), 'completed');
+    tile('qsTime', F.duration(sum.totalSeconds), 'total');
+  }
+
+  function load() {
+    var user = current;
+    show('statsError', false); show('recentError', false); show('recentEmpty', false); show('statsBody', true);
+    ['qsBest', 'qsAcc', 'qsRuns', 'qsTime'].forEach(function (id) { $(id).innerHTML = '<span class="skel" style="width:56px;height:26px"></span>'; $(id + 'Cap').innerHTML = '&nbsp;'; });
+    $('recentList').innerHTML = '<li><span class="skel" style="width:100%;height:38px"></span></li><li><span class="skel" style="width:100%;height:38px"></span></li>';
+
+    D.myProfile(user.id).then(function (p) {
+      if (p && p.created_at) $('idMeta').textContent = 'Member since ' + F.monthYear(p.created_at);
+    }).catch(function () { /* optional line; ignore */ });
+
+    D.myStats().then(function (rows) { renderStats(D.summarize(rows)); })
+      .catch(function (e) { console.error(e); show('statsBody', false); errorBox('statsError', load); });
+    D.recentRuns(user.id, 4).then(renderRecent)
+      .catch(function (e) { console.error(e); $('recentList').textContent = ''; errorBox('recentError', load); });
+  }
+
+  window.TB_SHELL.ready.then(function (user) {
+    current = user;
+    $('welcomeName').textContent = user.name;
+    $('idName').textContent = user.name;
+    $('idAvatar').textContent = initials(user.name);
+    if (user.guest) {
+      $('idMeta').textContent = 'Guest \u2022 progress saved on this device only';
+      show('statsCard', false); show('recentCard', false);
+      $('guestCard').classList.remove('hidden');
+      $('psTitle').textContent = 'Save Your Progress';
+      $('psText').textContent = 'Create a free account to keep your runs, see your stats and join the leaderboard.';
+      $('psBtn').href = 'index.html';
+      $('psBtn').querySelector('span').textContent = 'Create account';
+      return;
+    }
+    load();
+  });
+})();
+</script>
+</body>
+</html>
